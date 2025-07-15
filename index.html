@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>諮商技巧模擬室：同理心大挑戰</title>
+    <!-- 引入 React 和 ReactDOM CDN -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- 引入 Babel CDN，用於在瀏覽器中轉換 JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- 引入 Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 自定義字體 */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* 自定義動畫 */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in { animation: fadeIn 0.5s ease-out; }
+        @keyframes pop { 0% { transform: scale(1); } 50% { transform: scale(1.03); } 100% { transform: scale(1); } }
+        .animate-pop { animation: pop 0.3s ease-out; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); } 20%, 40%, 60%, 80% { transform: translateX(5px); } }
+        .animate-shake { animation: shake 0.5s ease-in-out; }
+        @keyframes scaleIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+        .animate-scale-in { animation: scaleIn 0.5s ease-out; }
+        @keyframes bounceOnce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        .animate-bounce-once { animation: bounceOnce 0.6s ease-out; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .animate-pulse { animation: pulse 1s infinite; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-purple-300 to-pink-400 min-h-screen flex items-center justify-center p-4">
+    <div id="root" class="w-full h-full flex items-center justify-center"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useCallback, useRef } = React;
+
+        // 遊戲問題數據
+        const gameQuestions = [
+            {
+                id: 1,
+                clientScenario: `「我最討厭回家了，爸爸只關心他自己的事業，我們常常一個月才見一次，只要見面，他就板著臉說我不乖、不用功；媽媽也忙著打牌、買名牌，只會用錢打發我。上個星期我發高燒，病得不清，他們也沒有照顧我，最後是我自己去醫院看醫生，這是家嗎？比冰庫還冷，我回去做什麼呢？」`,
+                options: [
+                    {
+                        text: `你對於回家感到非常厭惡和憤怒，覺得父母只顧自己的事情，沒有真正關心你，甚至在你生病時也沒人照顧，讓你覺得家裡像冰庫一樣冰冷，感到非常孤單和失望。`,
+                        isCorrect: true,
+                        explanation: `這展現了初層次同理心，您準確地簡述了案主的語意並反映了其主要情緒（厭惡、憤怒、孤單、失望），有助於建立關係。`
+                    },
+                    {
+                        text: `你應該多體諒父母的辛苦，他們也是為了這個家在努力。`,
+                        isCorrect: false,
+                        explanation: `這個回應過早地給予了建議或批判，可能讓案主覺得不被理解，阻礙其表達。`
+                    },
+                    {
+                        text: `那你為什麼不跟父母好好溝通呢？`,
+                        isCorrect: false,
+                        explanation: `這個回應雖然是開放式問句，但在案主情緒高漲時，可能被視為一種指責或逃避其感受。`
+                    },
+                    {
+                        text: `別生氣了，這沒什麼大不了的，很多人都有家庭問題。`,
+                        isCorrect: false,
+                        explanation: `這個回應輕視了案主的情緒和困擾，會讓案主感到不被重視或無效。`
+                    }
+                ]
+            },
+            {
+                id: 2,
+                clientScenario: `「他每次從軍隊回家，就躲在書房裡打電動，把我和小孩都當做空氣，我就跟他說，乾脆不要放假、不要回家算了，後來他休假就在外面混到半夜才願意回家，真的把家裡當旅館，也根本沒有把我放在眼裡，我真的很火大。上週六晚上他回家後，我們兩個直接大吵一架，我叫他給我滾出去，我現在實在不想看到他，他實在是太過份了，放假不是睡覺都是玩手機，平時也不努力繼續進修，根本不求上進，大學畢業到現在都沒去讀碩士，就只是當基層的小主 管，到現在都六、七年了，難道要一輩子都不升官？」`,
+                options: [
+                    {
+                        text: `你對於先生回家只顧打電動、不理會你們感到非常憤怒和不滿，覺得自己不被重視，同時也對他沒有上進心感到很失望和焦慮。`,
+                        isCorrect: true,
+                        explanation: `這個回應準確地反映了案主複雜的情緒（憤怒、不滿、不被重視、失望、焦慮），並簡述了其抱怨的內容，展現了同理心。`
+                    },
+                    {
+                        text: `你先生這樣做確實是很過分，你應該跟他好好談談，或者考慮一下你們的關係。`,
+                        isCorrect: false,
+                        explanation: `這個回應雖然表達了認同，但過早地給予了評價和建議，沒有先深入理解案主的情緒和需求。`
+                    },
+                    {
+                        text: `聽起來你對先生的事業發展和家庭參與度非常不滿意，是嗎？`,
+                        isCorrect: false,
+                        explanation: `這個回應雖然試圖澄清，但語氣可能顯得較為理性或審問，沒有充分反映案主當下的強烈情緒。`
+                    },
+                    {
+                        text: `你這麼生氣，是因為他打電動不陪你，還是因為他不求上進呢？`,
+                        isCorrect: false,
+                        explanation: `這個回應試圖分解問題，但可能讓案主覺得其情緒被切割，沒有被整體理解。`
+                    }
+                ]
+            },
+            {
+                id: 3,
+                clientScenario: `「我最近覺得很迷茫，不知道自己大學畢業後該做什麼，父母希望我考公職，但我對公職沒有興趣，朋友們都找到工作了，只有我還在原地踏步，覺得自己很沒用。」`,
+                options: [
+                    {
+                        text: `你對於畢業後的生涯方向感到迷茫和焦慮，同時也因為看到朋友都有了著落，而自己還沒有，所以覺得很挫敗和沒用。`,
+                        isCorrect: true,
+                        explanation: `這個回應準確地捕捉了案主的迷茫、焦慮、挫敗和無用感，並簡述了其困境，有助於案主感到被理解。`
+                    },
+                    {
+                        text: `考公職確實是一個穩定的選擇，你可以再考慮看看。`,
+                        isCorrect: false,
+                        explanation: `這個回應過早地給予建議，且沒有觸及案主內心的真實感受和掙扎。`
+                    },
+                    {
+                        text: `每個人都有自己的步調，你不需要和朋友比較。`,
+                        isCorrect: false,
+                        explanation: `這個回應雖然試圖安慰，但可能讓案主覺得自己的感受被輕視，沒有被真正聽見。`
+                    },
+                    {
+                        text: `所以你的意思是，你對未來感到很困惑，對嗎？`,
+                        isCorrect: false,
+                        explanation: `這個回應過於簡化且帶有確認的語氣，沒有充分反映案主的情緒深度。`
+                    }
+                ]
+            },
+            {
+                id: 4,
+                clientScenario: `「我真的很生氣！我的同事總是把工作推給我，然後自己去邀功。我跟主管反映過好幾次，但主管都說要我『多學習』，根本沒人理解我有多委屈！」`,
+                options: [
+                    {
+                        text: `你對同事的行為感到非常憤怒，覺得他們推卸責任又搶功勞，而且向主管反映後，主管的態度又讓你感到非常委屈和不被理解。`,
+                        isCorrect: true,
+                        explanation: `這個回應精準地反映了案主的憤怒和委屈感，並重述了其困境，讓案主感受到被深度同理。`
+                    },
+                    {
+                        text: `你的同事確實很糟糕，主管也不幫你，你應該直接找他們理論。`,
+                        isCorrect: false,
+                        explanation: `這個回應過於情緒化並帶有煽動性，沒有幫助案主探索其感受或尋找建設性解決方案。`
+                    },
+                    {
+                        text: `所以你覺得很不公平，是嗎？`,
+                        isCorrect: false,
+                        explanation: `這個回應過於簡短，沒有充分捕捉案主強烈的情緒和背後的委屈感。`
+                    },
+                    {
+                        text: `這就是職場常態，你要學會適應。`,
+                        isCorrect: false,
+                        explanation: `這個回應輕視了案主的情緒，並給予了不合時宜的「建議」，會讓案主感到不被支持。`
+                    }
+                ]
+            },
+            {
+                id: 5,
+                clientScenario: `「我最近失眠很嚴重，每天晚上都睡不好，腦子裡一直在想工作上的事情，覺得壓力很大，很怕自己表現不好會被裁員。我真的快撐不下去了。」`,
+                options: [
+                    {
+                        text: `你因為工作壓力太大，導致嚴重失眠，腦子裡不斷思考工作的事情，感到非常焦慮和疲憊，甚至擔心會被裁員，覺得自己快要撐不下去了。`,
+                        isCorrect: true,
+                        explanation: `這個回應完整地反映了案主的失眠、焦慮、疲憊和無力感，並連結到工作壓力，展現了高度的同理。`
+                    },
+                    {
+                        text: `你應該放鬆一下，不要想太多，壓力大是正常的。`,
+                        isCorrect: false,
+                        explanation: `這個回應雖然是好意，但沒有認可案主當下的痛苦，可能讓案主覺得自己的感受不被理解。`
+                    },
+                    {
+                        text: `你是不是對自己要求太高了？`,
+                        isCorrect: false,
+                        explanation: `這個回應過早地進行了推測或解釋，沒有先專注於案主表達的感受和困境。`
+                    },
+                    {
+                        text: `失眠確實很痛苦，你可以試試看數羊。`,
+                        isCorrect: false,
+                        explanation: `這個回應雖然表達了同情，但立即給予建議，沒有先深入探索案主失眠背後的情緒和壓力。`
+                    }
+                ]
+            }
+        ];
+
+        const App = () => {
+            const [gameState, setGameState] = useState('start'); // 'start', 'playing', 'results'
+            const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+            const [score, setScore] = useState(0);
+            const [moves, setMoves] = useState(0); // 記錄回答次數
+            const [feedback, setFeedback] = useState(null); // { message: string, isCorrect: boolean }
+            const [selectedOptionId, setSelectedOptionId] = useState(null); // 記錄用戶選擇的選項ID
+            const [canSelect, setCanSelect] = useState(true); // 控制是否可以選擇選項
+
+            const audioContextRef = useRef(null);
+
+            // 播放音效的通用函數
+            const playSound = useCallback((frequency, duration) => {
+                if (!audioContextRef.current) {
+                    try {
+                        audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
+                    } catch (e) {
+                        console.error("Web Audio API is not supported in this browser.", e);
+                        return;
+                    }
+                }
+                const context = audioContextRef.current;
+                
+                const oscillator = context.createOscillator();
+                const gainNode = context.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(context.destination);
+
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(frequency, context.currentTime);
+
+                gainNode.gain.setValueAtTime(0.5, context.currentTime); // 降低音量
+                gainNode.gain.exponentialRampToValueAtTime(0.001, context.currentTime + duration);
+
+                oscillator.start(context.currentTime);
+                oscillator.stop(context.currentTime + duration);
+            }, []);
+
+            const initializeGame = useCallback(() => {
+                // 嘗試恢復音頻上下文（如果被暫停）
+                if (audioContextRef.current && audioContextRef.current.state === 'suspended') {
+                    audioContextRef.current.resume();
+                }
+
+                setGameState('playing');
+                setCurrentQuestionIndex(0);
+                setScore(0);
+                setMoves(0);
+                setFeedback(null);
+                setSelectedOptionId(null);
+                setCanSelect(true);
+            }, []);
+
+            const handleOptionClick = useCallback((option, optionIndex) => {
+                if (!canSelect || selectedOptionId !== null) return; // 避免重複點擊
+
+                setSelectedOptionId(optionIndex); // 記錄已選擇的選項
+                setCanSelect(false); // 暫時禁用選擇
+
+                setMoves(prev => prev + 1);
+
+                if (option.isCorrect) {
+                    setScore(prev => prev + 1);
+                    setFeedback({ message: `答對了！${option.explanation}`, isCorrect: true });
+                    playSound(440, 0.2); // 答對音效
+                } else {
+                    setFeedback({ message: `答錯了。${option.explanation}`, isCorrect: false });
+                    playSound(220, 0.4); // 答錯音效
+                }
+
+                // 1.5 秒後進入下一題或顯示結果
+                setTimeout(() => {
+                    if (currentQuestionIndex < gameQuestions.length - 1) {
+                        setCurrentQuestionIndex(prev => prev + 1);
+                        setFeedback(null);
+                        setSelectedOptionId(null);
+                        setCanSelect(true); // 重新啟用選擇
+                    } else {
+                        setGameState('results'); // 遊戲結束
+                    }
+                }, 1500);
+            }, [canSelect, selectedOptionId, currentQuestionIndex, gameQuestions.length, playSound]);
+
+            const renderStartScreen = () => (
+                <div className="bg-white p-8 rounded-xl shadow-2xl text-center max-w-md w-full animate-fade-in">
+                    <h1 className="text-4xl font-extrabold text-gray-800 mb-6 font-sans">諮商技巧模擬室</h1>
+                    
+                    {/* 圖片區塊 */}
+                    <div className="my-6">
+                        <img 
+                            src="https://placehold.co/300x300/E0F2F7/000?text=Your+Image+Here" 
+                            onerror="this.onerror=null;this.src='https://placehold.co/300x300/E0F2F7/000?text=Image+Not+Found';"
+                            alt="諮商模擬室插畫" 
+                            className="mx-auto rounded-full shadow-lg w-48 h-48 object-cover"
+                        />
+                    </div>
+                    {/* 圖片區塊結束 */}
+
+                    <p className="text-lg text-gray-600 mb-4 font-sans">
+                        歡迎來到同理心大挑戰！您將扮演諮商員，選擇最能展現初層次同理心的回應。
+                    </p>
+                    <p className="text-md text-gray-500 mb-8 font-sans">
+                        每次選擇後，您會得到即時回饋，幫助您掌握諮商基礎技巧。
+                    </p>
+                    <button
+                        onClick={initializeGame}
+                        className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transform hover:scale-105 transition-all duration-300 ease-in-out"
+                    >
+                        開始挑戰
+                    </button>
+                </div>
+            );
+
+            const renderGameScreen = () => {
+                const currentQuestion = gameQuestions[currentQuestionIndex];
+                if (!currentQuestion) return null;
+
+                return (
+                    <div className="bg-white p-6 sm:p-8 rounded-xl shadow-2xl w-full max-w-3xl animate-fade-in">
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 font-sans">
+                                情境 {currentQuestionIndex + 1} / {gameQuestions.length}
+                            </h2>
+                            <div className="text-xl font-bold text-gray-700 font-sans">
+                                得分: {score} | 回答次數: {moves}
+                            </div>
+                        </div>
+
+                        <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                            <h3 className="text-lg font-semibold text-gray-800 mb-2 font-sans">案主敘述：</h3>
+                            <p className="text-gray-700 whitespace-pre-wrap font-sans leading-relaxed">
+                                {currentQuestion.clientScenario}
+                            </p>
+                        </div>
+
+                        <h3 className="text-lg font-semibold text-gray-800 mb-4 font-sans">請問下列哪一個回應比較適切？</h3>
+                        <div className="grid grid-cols-1 gap-3">
+                            {currentQuestion.options.map((option, index) => (
+                                <button
+                                    key={index}
+                                    onClick={() => handleOptionClick(option, index)}
+                                    disabled={!canSelect || selectedOptionId !== null}
+                                    className={`
+                                        p-3 rounded-lg text-left text-base font-medium transition-all duration-200 ease-in-out
+                                        ${selectedOptionId === index
+                                            ? (option.isCorrect ? 'bg-green-200 border-green-500' : 'bg-red-200 border-red-500 animate-shake')
+                                            : 'bg-gray-100 hover:bg-gray-200 border-gray-300'
+                                        }
+                                        ${!canSelect || selectedOptionId !== null ? 'cursor-not-allowed opacity-80' : 'cursor-pointer'}
+                                        border-2 shadow-sm hover:shadow-md font-sans
+                                    `}
+                                >
+                                    {option.text}
+                                </button>
+                            ))}
+                        </div>
+
+                        {feedback && (
+                            <div className={`mt-6 p-4 rounded-lg text-base font-semibold font-sans border ${feedback.isCorrect ? 'bg-green-100 text-green-700 border-green-400 animate-fade-in' : 'bg-red-100 text-red-700 border-red-400 animate-fade-in'}`}>
+                                {feedback.message}
+                            </div>
+                        )}
+                    </div>
+                );
+            };
+
+            const renderResultScreen = () => (
+                <div className="bg-white p-8 rounded-xl shadow-2xl text-center max-w-md w-full animate-scale-in">
+                    <h1 className="text-4xl font-extrabold text-gray-800 mb-6 font-sans">挑戰結束！</h1>
+                    <p className="text-2xl text-gray-700 mb-4 font-sans">
+                        您的最終得分： <span className="font-bold text-purple-600 text-xl">{score}</span> / {gameQuestions.length}
+                    </p>
+                    <p className="text-lg text-gray-600 mb-8 font-sans">
+                        總共回答了 {moves} 次。
+                    </p>
+                    <button
+                        onClick={initializeGame}
+                        className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transform hover:scale-105 transition-all duration-300 ease-in-out"
+                    >
+                        再挑戰一次
+                    </button>
+                </div>
+            );
+
+            return (
+                <div className="App min-h-screen bg-gradient-to-br from-purple-300 to-pink-400 flex items-center justify-center p-4">
+                    {gameState === 'start' && renderStartScreen()}
+                    {gameState === 'playing' && renderGameScreen()}
+                    {gameState === 'results' && renderResultScreen()}
+                </div>
+            );
+        };
+
+        // 將 React App 渲染到 HTML 頁面中的 'root' 元素
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>
